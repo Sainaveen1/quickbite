@@ -22,7 +22,7 @@ packages/
 infra/postgres/        Postgres 16 + PostGIS image (multi-arch)
 deploy/                Production compose + Caddyfile for the VM
 scripts/vm-setup.sh    One-time Oracle VM setup
-docs/                  Phase checklists, ADRs, New Relic friction log
+docs/                  Phase checklists, ADRs
 ```
 
 ## Run locally

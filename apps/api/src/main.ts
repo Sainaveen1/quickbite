@@ -1,5 +1,5 @@
 // Phase 1: add `require('newrelic')` as the FIRST line (or start with `node -r newrelic dist/main.js`)
-// once you've decided which New Relic account to use.
+// once the New Relic license key is in your .env.
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';

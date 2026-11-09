@@ -2,15 +2,16 @@
 
 **Done when:** every push to `main` builds an arm64 image, deploys it to your Oracle VM, and `https://<sub>.duckdns.org/health` returns `{"status":"ok"}`. The Next.js app should also be live on Vercel.
 
-Use **your personal** GitHub, Oracle, Vercel, DuckDNS and API-key accounts only. Get your manager's written OK first: QuickBite is your personal project, you keep ownership and the public repo, and you're building it on the NR laptop as an instrumentation test app. Confirm that Docker and pushes to a personal GitHub are allowed on the corporate laptop.
+Use **your personal** GitHub, Oracle, Vercel, DuckDNS and API-key accounts only. Never commit secrets: `.env` is git-ignored.
 
 ---
 
 ## Mon: repo + local infra (60 min)
-- [ ] Create a **public** GitHub repo `quickbite` on your personal account. Copy this starter kit in, then commit.
-- [ ] Install Node 22 (`nvm install 22`), then `corepack enable`, then Docker Desktop (or Colima/OrbStack).
-- [ ] `cp .env.example .env` → `pnpm install` (this creates `pnpm-lock.yaml`, which you **commit**: CI and Docker use `--frozen-lockfile`).
-- [ ] `pnpm infra:up`. Check Postgres (`psql ... -c "select postgis_version();"`), Redis (`redis-cli ping`) and Redpanda console at http://localhost:8080.
+- [x] Create a **public** GitHub repo `quickbite` (empty, no README) on your personal account. Then in `~/Desktop/FullStack-StudyPlan/quickbite`: `git init -b main && git add . && git commit -m "Phase 0 starter" && git remote add origin git@github.com:<you>/quickbite.git && git push -u origin main`.
+- [x] Same for `~/Desktop/FullStack-StudyPlan/interview-answer-bank` → a **private** repo `interview-answer-bank`.
+- [x] Install Node 22 (`nvm install 22`), then `corepack enable`, then Docker Desktop (or Colima/OrbStack).
+- [x] `cp .env.example .env` → `pnpm install` (this creates `pnpm-lock.yaml`, which you **commit**: CI and Docker use `--frozen-lockfile`).
+- [x] `pnpm infra:up`. Check Postgres (`psql ... -c "select postgis_version();"`), Redis (`redis-cli ping`) and Redpanda console at http://localhost:8080.
 
 ## Wed: API + tests + CI (60 min)
 - [ ] `pnpm --filter @quickbite/api dev` → `curl localhost:3000/health`.
@@ -41,12 +42,12 @@ Use **your personal** GitHub, Oracle, Vercel, DuckDNS and API-key accounts only.
 ## Sun: automate deploys + Next.js on Vercel (60 min)
 - [ ] Create a **deploy-only** SSH key pair (`ssh-keygen -t ed25519 -f qb_deploy`) and add the `.pub` to the VM's `~/.ssh/authorized_keys`.
 - [ ] GitHub repo → Settings → Environments → `production` → secrets: `VM_SSH_KEY` (private key), `VM_HOST` (IP), `VM_USER` (`ubuntu`), `API_DOMAIN` (`<sub>.duckdns.org`).
-- [ ] Push a change to `apps/api` → the **Deploy** workflow builds the arm64 image, deploys it and smoke-tests `/health`.
+- [ ] In `.github/workflows/deploy.yml`, un-comment the `push:` trigger (it's manual-only until now). Then push a change to `apps/api`: the **Deploy** workflow builds the arm64 image, deploys it and smoke-tests `/health`.
 - [ ] Create the web app:
       `pnpm create next-app@latest apps/web --ts --app --eslint --src-dir --use-pnpm --import-alias "@/*"`
       Rename its package to `@quickbite/web`, then commit.
 - [ ] Vercel → import the repo → Root Directory `apps/web` → deploy. You get `quickbite-<you>.vercel.app`.
-- [ ] Add one entry to `docs/NR_FRICTION_LOG.md` if anything about the NR account setup was confusing.
+- [ ] Note any observability-setup friction in your private notes (kept outside this public repo).
 
 ---
 

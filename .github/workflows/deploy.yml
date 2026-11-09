@@ -1,9 +1,11 @@
 name: Deploy API to Oracle VM
+# Manual-only until the Oracle VM + secrets exist (Week 1, Sunday).
+# Then delete the "#" on the 4 push lines below to deploy automatically on every push to main.
 on:
-  push:
-    branches: [main]
-    paths: ["apps/api/**", "packages/**", "deploy/**", "infra/**", ".github/workflows/deploy.yml"]
   workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths: ["apps/api/**", "packages/**", "deploy/**", "infra/**", ".github/workflows/deploy.yml"]
 
 permissions:
   contents: read
