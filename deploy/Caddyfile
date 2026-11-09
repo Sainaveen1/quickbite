@@ -1,0 +1,10 @@
+# Caddy gets and renews the Let's Encrypt certificate for your DuckDNS subdomain automatically.
+{$API_DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+	reverse_proxy api:3000
+}

@@ -1,0 +1,71 @@
+# Runs on the Oracle Cloud Always Free Arm VM (2 OCPU / 12 GB RAM).
+# Deployed by .github/workflows/deploy.yml into ~/quickbite on the VM.
+name: quickbite
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api]
+    mem_limit: 128m
+
+  api:
+    image: ghcr.io/${GHCR_OWNER}/quickbite-api:${API_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      API_PORT: 3000
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    mem_limit: 256m
+
+  postgres:
+    build: ./infra/postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    command: ["postgres", "-c", "shared_buffers=256MB", "-c", "max_connections=100"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      retries: 10
+    mem_limit: 1g
+    # No ports published: only reachable from other containers.
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 10
+    mem_limit: 320m
+
+  # Phase 2: uncomment when Kafka work starts.
+  # redpanda:
+  #   image: docker.redpanda.com/redpandadata/redpanda:${REDPANDA_TAG:-v24.2.7}
+  #   restart: unless-stopped
+  #   command: [redpanda, start, --smp=1, --memory=1G, --overprovisioned,
+  #             --kafka-addr=internal://0.0.0.0:9092, --advertise-kafka-addr=internal://redpanda:9092]
+  #   volumes: [redpandadata:/var/lib/redpanda/data]
+  #   mem_limit: 1400m
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pgdata:
+  redisdata:
+  # redpandadata:

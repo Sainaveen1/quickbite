@@ -1,0 +1,61 @@
+# Local development infrastructure. Start with:  pnpm infra:up
+# Memory flags are small on purpose. Production runs on a 12 GB free VM.
+name: quickbite-dev
+
+services:
+  postgres:
+    build: ./infra/postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-quickbite}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-locally}
+      POSTGRES_DB: ${POSTGRES_DB:-quickbite}
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=100"]
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-quickbite}"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  redpanda:
+    # Kafka-API compatible, much lighter than Kafka. Pin to the latest stable tag when you start.
+    image: docker.redpanda.com/redpandadata/redpanda:${REDPANDA_TAG:-v24.2.7}
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=1G
+      - --overprovisioned
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+    ports: ["19092:19092"]
+    volumes: [redpandadata:/var/lib/redpanda/data]
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 10s
+      retries: 10
+
+  redpanda-console:
+    # Local-only UI for topics/consumer groups: http://localhost:8080
+    image: docker.redpanda.com/redpandadata/console:latest
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+    ports: ["8080:8080"]
+    depends_on:
+      redpanda: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  redisdata:
+  redpandadata:
