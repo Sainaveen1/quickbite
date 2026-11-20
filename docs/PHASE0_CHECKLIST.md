@@ -14,10 +14,10 @@ Use **your personal** GitHub, Oracle, Vercel, DuckDNS and API-key accounts only.
 - [x] `pnpm infra:up`. Check Postgres (`psql ... -c "select postgis_version();"`), Redis (`redis-cli ping`) and Redpanda console at http://localhost:8080.
 
 ## Wed: API + tests + CI (60 min)
-- [ ] `pnpm --filter @quickbite/api dev` → `curl localhost:3000/health`.
-- [ ] `pnpm test` passes (the health spec).
-- [ ] Push → the **CI** workflow goes green on GitHub.
-- [ ] Write **ADR-0001** (monorepo + pnpm + Turborepo). An example is already in `docs/adr/`. Edit it in your own words.
+- [x] `pnpm --filter @quickbite/api dev` → `curl localhost:3000/health`.
+- [x] `pnpm test` passes (the health spec).
+- [x] Push → the **CI** workflow goes green on GitHub.
+- [ ] (deferred) Write **ADR-0001** (monorepo + pnpm + Turborepo). An example is already in `docs/adr/`. Edit it in your own words.
 
 ## Fri: Oracle Cloud account + VM (60 min)
 - [ ] Sign up for Oracle Cloud Free Tier. **You** enter the card for verification. Pick home region **India South (Hyderabad)** or **India West (Mumbai)**. This can't be changed later.
